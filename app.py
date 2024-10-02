@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 from caption import caption_img
 from vton import virtual_tryon
+import logging
 
 logging.basicConfig(level=logging.INFO)
 
