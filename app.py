@@ -104,56 +104,56 @@ def main():
     #             else:
     #                 st.error("Failed to prepare download for the result image.")
     if model_file and garment_file and st.session_state.start_generation:
-    try:
-        model_img = Image.open(model_file)
-        garment_img = Image.open(garment_file)
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            st.image(model_img, caption='Model Image', use_column_width=True)
-        with col2:
-            st.image(garment_img, caption='Garment Image', use_column_width=True)
-        
-        with st.spinner('Uploading images...'):
-            model_url = upload_image_to_imgbb(model_img, imgbb_api_key)
-            garment_url = upload_image_to_imgbb(garment_img, imgbb_api_key)
-
-        if model_url and garment_url:
-            st.success("Images uploaded successfully!")
+        try:
+            model_img = Image.open(model_file)
+            garment_img = Image.open(garment_file)
             
-            download_garment = requests.get(garment_url)
-            garment_img = Image.open(io.BytesIO(download_garment.content))
-            garment_img_data = garment_file.getvalue()
-            garment_img.save("garment.png")
-            garment_desc = caption_img(garment_img_data)[0]["generated_text"]
-            os.remove("garment.png")
-
-            with st.spinner('Processing virtual try-on...'):
-                result_url = virtual_tryon(model_url, garment_url, garment_desc)
+            col1, col2 = st.columns(2)
+            with col1:
+                st.image(model_img, caption='Model Image', use_column_width=True)
+            with col2:
+                st.image(garment_img, caption='Garment Image', use_column_width=True)
             
-            if result_url:
-                st.image(result_url, caption='Virtual Try-on Result', use_column_width=True)
+            with st.spinner('Uploading images...'):
+                model_url = upload_image_to_imgbb(model_img, imgbb_api_key)
+                garment_url = upload_image_to_imgbb(garment_img, imgbb_api_key)
+
+            if model_url and garment_url:
+                st.success("Images uploaded successfully!")
                 
-                response = requests.get(result_url)
-                if response.status_code == 200:
-                    st.download_button(
-                        label="Download Result Image",
-                        data=response.content,
-                        file_name="virtual_tryon_result.png",
-                        mime="image/png"
-                    )
+                download_garment = requests.get(garment_url)
+                garment_img = Image.open(io.BytesIO(download_garment.content))
+                garment_img_data = garment_file.getvalue()
+                garment_img.save("garment.png")
+                garment_desc = caption_img(garment_img_data)[0]["generated_text"]
+                os.remove("garment.png")
+
+                with st.spinner('Processing virtual try-on...'):
+                    result_url = virtual_tryon(model_url, garment_url, garment_desc)
+                
+                if result_url:
+                    st.image(result_url, caption='Virtual Try-on Result', use_column_width=True)
+                    
+                    response = requests.get(result_url)
+                    if response.status_code == 200:
+                        st.download_button(
+                            label="Download Result Image",
+                            data=response.content,
+                            file_name="virtual_tryon_result.png",
+                            mime="image/png"
+                        )
+                    else:
+                        logging.error(f"Failed to download result image. Status code: {response.status_code}")
+                        st.error("Failed to prepare download for the result image.")
                 else:
-                    logging.error(f"Failed to download result image. Status code: {response.status_code}")
-                    st.error("Failed to prepare download for the result image.")
+                    logging.error("Virtual try-on failed to produce a result URL")
+                    st.error("Virtual try-on process failed. Please try again.")
             else:
-                logging.error("Virtual try-on failed to produce a result URL")
-                st.error("Virtual try-on process failed. Please try again.")
-        else:
-            logging.error("Failed to upload images to ImgBB")
-            st.error("Failed to upload images. Please try again.")
-    except Exception as e:
-        logging.error(f"An error occurred: {str(e)}")
-        st.error(f"An error occurred: {str(e)}") 
+                logging.error("Failed to upload images to ImgBB")
+                st.error("Failed to upload images. Please try again.")
+        except Exception as e:
+            logging.error(f"An error occurred: {str(e)}")
+            st.error(f"An error occurred: {str(e)}") 
 
 if __name__ == "__main__":
     main()
