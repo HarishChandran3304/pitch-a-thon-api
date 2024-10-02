@@ -30,17 +30,17 @@ def upload_image_to_imgbb(image, api_key):
     #     return None
     
     try:
-    buffered = io.BytesIO()
-    image.save(buffered, format="PNG")
-    img_str = base64.b64encode(buffered.getvalue()).decode()
-    url = "https://api.imgbb.com/1/upload"
-    payload = {
-        "key": api_key,
-        "image": img_str,
-    }
-    res = requests.post(url, payload)
-    res.raise_for_status()
-    return res.json()['data']['url']
+        buffered = io.BytesIO()
+        image.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+        url = "https://api.imgbb.com/1/upload"
+        payload = {
+            "key": api_key,
+            "image": img_str,
+        }
+        res = requests.post(url, payload)
+        res.raise_for_status()
+        return res.json()['data']['url']
     except Exception as e:
         logging.error(f"Failed to upload image: {str(e)}")
         st.error(f"Failed to upload image: {str(e)}")
